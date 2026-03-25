@@ -137,6 +137,16 @@ export default config;
         };
     }
 
+    // ── Branding CSS file ─────────────────────────────────────────────────────
+
+    generateBrandingCssFile(cfg: CustomizationConfig): GeneratedFile {
+        return {
+            path: 'src/app/branding.css',
+            content: generateBrandingCss(cfg.branding),
+            type: 'config',
+        };
+    }
+
     // ── package.json ──────────────────────────────────────────────────────────
 
     generatePackageJson(family: TemplateFamilyId, cfg: CustomizationConfig): GeneratedFile {
