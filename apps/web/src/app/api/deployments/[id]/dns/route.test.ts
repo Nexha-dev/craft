@@ -11,6 +11,10 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
+vi.mock('@/lib/api/require-domain-tier', () => ({
+    requireDomainTier: vi.fn().mockResolvedValue(null),
+}));
+
 const fakeUser = { id: 'user-1', email: 'user@example.com' };
 const params = { id: 'dep-1' };
 
@@ -127,5 +131,26 @@ describe('GET /api/deployments/[id]/dns', () => {
         expect(res.status).toBe(200);
         const body = await res.json();
         expect(body.records.some((r: { type: string }) => r.type === 'CNAME')).toBe(true);
+    });
+
+    it('returns 403 with upgrade prompt for free-tier users', async () => {
+        const { requireDomainTier } = await import('@/lib/api/require-domain-tier');
+        vi.mocked(requireDomainTier).mockResolvedValueOnce(
+            new Response(
+                JSON.stringify({ error: 'Custom domains require a Pro or Enterprise subscription.', requiredTier: 'pro', upgradeUrl: '/pricing' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } },
+            ) as unknown as import('next/server').NextResponse,
+        );
+        mockFrom.mockReturnValue(
+            makeSupabaseQuery([{ data: { user_id: fakeUser.id }, error: null }]),
+        );
+        const { GET } = await import('./route');
+
+        const res = await GET(makeRequest(), { params });
+
+        expect(res.status).toBe(403);
+        const body = await res.json();
+        expect(body.requiredTier).toBe('pro');
+        expect(body.upgradeUrl).toBe('/pricing');
     });
 });

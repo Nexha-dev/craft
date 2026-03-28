@@ -29,6 +29,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withDeploymentAuth } from '@/lib/api/with-auth';
 import { verifyViaTxt, verifyViaCname } from '@/lib/dns/domain-verification';
+import { requireDomainTier } from '@/lib/api/require-domain-tier';
 
 interface RequestBody {
     method: 'txt' | 'cname';
@@ -46,7 +47,10 @@ function normalizeBody(raw: unknown): RequestBody | null {
     return body as RequestBody;
 }
 
-export const POST = withDeploymentAuth(async (req: NextRequest, { params, supabase }) => {
+export const POST = withDeploymentAuth(async (req: NextRequest, { params, supabase, user }) => {
+    const denied = await requireDomainTier(supabase, user.id);
+    if (denied) return denied;
+
     let body: RequestBody;
     try {
         const raw = await req.json();

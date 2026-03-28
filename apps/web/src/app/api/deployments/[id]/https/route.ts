@@ -29,6 +29,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withDeploymentAuth } from '@/lib/api/with-auth';
 import { VercelService, VercelApiError } from '@/services/vercel.service';
+import { requireDomainTier } from '@/lib/api/require-domain-tier';
 
 const vercel = new VercelService();
 
@@ -44,7 +45,10 @@ async function fetchDeploymentDomainFields(
         .single();
 }
 
-export const POST = withDeploymentAuth(async (_req: NextRequest, { params, supabase }) => {
+export const POST = withDeploymentAuth(async (_req: NextRequest, { params, supabase, user }) => {
+    const denied = await requireDomainTier(supabase, user.id);
+    if (denied) return denied;
+
     const { data: deployment, error } = await fetchDeploymentDomainFields(supabase, params.id);
 
     if (error || !deployment) {
@@ -86,7 +90,10 @@ export const POST = withDeploymentAuth(async (_req: NextRequest, { params, supab
     return NextResponse.json(cert);
 });
 
-export const GET = withDeploymentAuth(async (_req: NextRequest, { params, supabase }) => {
+export const GET = withDeploymentAuth(async (_req: NextRequest, { params, supabase, user }) => {
+    const denied = await requireDomainTier(supabase, user.id);
+    if (denied) return denied;
+
     const { data: deployment, error } = await fetchDeploymentDomainFields(supabase, params.id);
 
     if (error || !deployment) {
