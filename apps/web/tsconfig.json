@@ -3,15 +3,9 @@
     "compilerOptions": {
         "types": ["vitest/globals"],
         "paths": {
-            "@/*": [
-                "./src/*"
-            ],
-            "@craft/types": [
-                "../../packages/types/src"
-            ],
-            "@craft/stellar": [
-                "../../packages/stellar/src"
-            ]
+            "@/*": ["./src/*"],
+            "@craft/types": ["../../packages/types/src"],
+            "@craft/stellar": ["../../packages/stellar/src"]
         }
     },
     "include": [
@@ -20,10 +14,5 @@
         "**/*.tsx",
         ".next/types/**/*.ts"
     ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+    "exclude": ["node_modules"]
 }
